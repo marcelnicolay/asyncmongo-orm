@@ -3,8 +3,8 @@
 
 from asyncmongo import Client
 
-from morm.propertie import __collections__
-from morm import get_database
+from asyncmongoorm.propertie import __collections__
+from asyncmongoorm.connection import get_database
 
 from datetime import datetime
 from torneira import settings

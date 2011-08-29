@@ -77,12 +77,12 @@ class Repository(object):
         deferred.send(items)
         
     @classmethod
-    def count(cls, deferred, **kw):
+    def count(cls, deferred, value=None, **kw):
         logging.debug("[MongoORM] - counting %s" % cls.__name__)
         onresponse = functools.partial(cls._count, deferred=deferred)
         
         db = get_database()
-        db.command({"count": cls.__collection__}, callback=onresponse)
+        db.command({"count": cls.__collection__}, value=value, callback=onresponse)
         
     @classmethod
     def _count(cls, result, error, deferred):

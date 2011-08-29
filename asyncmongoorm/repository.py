@@ -7,7 +7,6 @@ from asyncmongoorm.propertie import __collections__
 from asyncmongoorm.connection import get_database
 
 from datetime import datetime
-from torneira import settings
 
 import logging
 import functools

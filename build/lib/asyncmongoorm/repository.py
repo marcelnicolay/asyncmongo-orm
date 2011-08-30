@@ -7,7 +7,6 @@ from asyncmongoorm.propertie import __collections__
 from asyncmongoorm.connection import get_database
 
 from datetime import datetime
-from torneira import settings
 
 import logging
 import functools
@@ -78,12 +77,20 @@ class Repository(object):
         deferred.send(items)
         
     @classmethod
-    def count(cls, deferred, **kw):
-        logging.debug("[MongoORM] - counting %s" % cls.__name__)
+    def count(cls, deferred, query=None, **kw):
         onresponse = functools.partial(cls._count, deferred=deferred)
         
         db = get_database()
-        db.command({"count": cls.__collection__}, callback=onresponse)
+        
+        command = {
+            "count": cls.__collection__
+        }
+        
+        if query:
+            command["query"] = query
+            
+        logging.debug("[MongoORM] - counting command %s" % command)
+        db.command(command, callback=onresponse)
         
     @classmethod
     def _count(cls, result, error, deferred):

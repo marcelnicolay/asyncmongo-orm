@@ -8,6 +8,8 @@ from asyncmongoorm.connection import get_database
 
 from datetime import datetime
 
+from bson.son import SON
+
 import logging
 import functools
       
@@ -101,45 +103,30 @@ class Repository(object):
         deferred.send(total)
         
     @classmethod
-    def geo_near(cls, deferred, near, max_distance=None, num=None, spherical=False, unique_docs=False, query=None, **kw):
+    def geo_near(cls, deferred, near, max_distance=None, num=None, spherical=None, unique_docs=None, query=None, **kw):
         onresponse = functools.partial(cls._geo_near, deferred=deferred)
         
         db = get_database()
         
-        command = {
-            "geoNear": cls.__collection__,
-            "near": near,
-            "maxDistance": None,
-            "uniqueDocs": False,
-            "num": None,
-            "query": None,
-            "spherical": False
-        }
+        command = SON({"geoNear": cls.__collection__})
         
-        if not spherical:
-            command.pop("spherical")
-        else:
-            command['spherical']=spherical
+        if near != None:
+            command.update({'near': near})
             
-        if not max_distance:
-            command.pop("maxDistance")
-        else:
-            command['maxDistance']=max_distance
+        if query != None:
+            command.update({'query': query})
             
-        if not unique_docs:
-            command.pop("uniqueDocs")
-        else:
-            command['uniqueDocs']=unique_docs
+        if num != None:
+            command.update({'num': num})
             
-        if not num:
-            command.pop("num")
-        else:
-            command['num']=num
+        if max_distance != None:
+            command.update({'maxDistance': max_distance})
             
-        if not query:
-            command.pop("query")
-        else:
-            command['query']=query
+        if unique_docs != None:
+            command.update({'uniqueDocs': unique_docs})
+            
+        if spherical != None:
+            command.update({'spherical': spherical})
             
         logging.debug("[MongoORM] - geoNear command %s" % command)
         db.command(command, callback=onresponse)

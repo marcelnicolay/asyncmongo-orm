@@ -53,7 +53,7 @@ class Repository(object):
 
     @classmethod
     def _find_one(cls, response, error, deferred):
-        logging.debug("[MongoORM] - findone %s SUCCESS" % response)
+        logging.debug("[MongoORM] - findone SUCCESS")
 
         if response:
             instance = cls.create(response)
@@ -99,6 +99,62 @@ class Repository(object):
         logging.debug("[MongoORM] - count result %s" % total)
         
         deferred.send(total)
+        
+    @classmethod
+    def geo_near(cls, deferred, near, max_distance=None, num=None, spherical=False, unique_docs=False, query=None, **kw):
+        onresponse = functools.partial(cls._geo_near, deferred=deferred)
+        
+        db = get_database()
+        
+        command = {
+            "geoNear": cls.__collection__,
+            "near": near,
+            "maxDistance": None,
+            "uniqueDocs": False,
+            "num": None,
+            "query": None,
+            "spherical": False
+        }
+        
+        if not spherical:
+            command.pop("spherical")
+        else:
+            command['spherical']=spherical
+            
+        if not max_distance:
+            command.pop("maxDistance")
+        else:
+            command['maxDistance']=max_distance
+            
+        if not unique_docs:
+            command.pop("uniqueDocs")
+        else:
+            command['uniqueDocs']=unique_docs
+            
+        if not num:
+            command.pop("num")
+        else:
+            command['num']=num
+            
+        if not query:
+            command.pop("query")
+        else:
+            command['query']=query
+            
+        logging.debug("[MongoORM] - geoNear command %s" % command)
+        db.command(command, callback=onresponse)
+        
+    @classmethod
+    def _geo_near(cls, result, error, deferred):
+        logging.info("[MongoORM] - geoNear result ::: %s" % result['ok'])
+        
+        items = []
+        
+        if result['ok']:
+            for item in result['results']:
+                items.append(cls.create(item['obj']))
+
+        deferred.send(items)
         
     @classmethod
     def get_collection(cls):

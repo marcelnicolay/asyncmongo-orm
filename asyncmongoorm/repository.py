@@ -166,11 +166,14 @@ class Repository(object):
         logging.info("[MongoORM] - remove %s(%s) SUCCESS" % (self.__collection__, self._id))
         deferred.send(error)
 
-    def update(self, deferred):
+    def update(self, deferred, obj_data=None):
         logging.info("[MongoORM] - update %s(%s)" % (self.__collection__, self._id))
 
+        if not obj_data:
+            obj_data = self.as_dict()
+
         onresponse = functools.partial(self._update, deferred=deferred)
-        self.get_collection().update({'_id': self._id}, self.as_dict(), safe=True, callback=onresponse)
+        self.get_collection().update({'_id': self._id}, obj_data, safe=True, callback=onresponse)
 
     def _update(self, response, error, deferred):        
         logging.info("[MongoORM] - update %s(%s) SUCCESS" % (self.__collection__, self._id))

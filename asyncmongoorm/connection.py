@@ -11,8 +11,8 @@ def get_database():
     if not __database__:
         logging.info("MONGODB connecting database...")
 
-        host= settings.mongo_url
-        port= settings.mongo_port
+        host = settings.mongo_url
+        port = settings.mongo_port
         dbname = settings.mongo_dbname
 
         __database__ = Client(pool_id='mydb', host=host, port=port, dbname=dbname)

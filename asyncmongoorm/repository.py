@@ -3,7 +3,7 @@
 
 from asyncmongo import Client
 
-from asyncmongoorm.propertie import __collections__
+from asyncmongoorm.properties import __collections__
 from asyncmongoorm.connection import get_database
 
 from datetime import datetime

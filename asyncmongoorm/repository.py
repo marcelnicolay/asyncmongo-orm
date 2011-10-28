@@ -45,40 +45,42 @@ class Repository(object):
         return instance
 
     @classmethod
-    def find_one(cls, deferred,  query={}):
+    def find_one(cls, deferred=None, callback=None,  query={}):
         logging.debug("[MongoORM] - findone %s" % query)
 
-        onresponse = functools.partial(cls._find_one, deferred=deferred)
+        onresponse = functools.partial(cls._find_one, deferred=deferred, callback=callback)
         cls.get_collection().find_one(query, callback=onresponse)
 
     @classmethod
-    def _find_one(cls, response, error, deferred):
+    def _find_one(cls, response, error, deferred, callback):
         logging.debug("[MongoORM] - findone SUCCESS")
 
+        instance = None
         if response:
             instance = cls.create(response)
-            deferred.send(instance)
-        else:
-            deferred.send(False)
+        
+        deferred.send(instance) if deferred else callback(instance)
+        
    
     @classmethod
-    def find(cls, deferred, query, **kw):
+    def find(cls, deferred=None, callback=None, query={}, **kw):
         logging.debug("[MongoORM] - find %s, %s" % (cls.__name__, query))
 
-        onresponse = functools.partial(cls._find, deferred=deferred)
+        onresponse = functools.partial(cls._find, deferred=deferred, callback=callback)
+
         cls.get_collection().find(query, callback=onresponse, **kw)
 
     @classmethod
-    def _find(cls, result, error, deferred, **kw):
+    def _find(cls, result, error, deferred, callback, **kw):
         items = []
         for item in result:
             items.append(cls.create(item))
 
-        deferred.send(items)
+        deferred.send(items) if deferred else callback(items)
 
     @classmethod
-    def count(cls, deferred, query=None, **kw):
-        onresponse = functools.partial(cls._count, deferred=deferred)
+    def count(cls, deferred=None, callback=None, query=None, **kw):
+        onresponse = functools.partial(cls._count, deferred=deferred, callback=callback)
 
         db = get_database()
 
@@ -93,12 +95,12 @@ class Repository(object):
         db.command(command, callback=onresponse)
 
     @classmethod
-    def _count(cls, result, error, deferred):
+    def _count(cls, result, error, deferred, callback):
         total = int(result['n'])
 
         logging.debug("[MongoORM] - count result %s" % total)
 
-        deferred.send(total)
+        deferred.send(total) if deferred else callback(total)
 
     @classmethod
     def geo_near(cls, deferred, near, max_distance=None, num=None, spherical=None, unique_docs=None, query=None, **kw):
@@ -146,38 +148,38 @@ class Repository(object):
         db = get_database()
         return getattr(db, cls.__collection__)
 
-    def save(self, deferred):
+    def save(self, deferred=None, callback=None):
         logging.info("[MongoORM] - save %s" % (self.__collection__))
 
-        onresponse = functools.partial(self._save, deferred=deferred)
+        onresponse = functools.partial(self._save, deferred=deferred, callback=callback)
         self.get_collection().insert(self.as_dict(), safe=True, callback=onresponse)
 
-    def _save(self, response, error, deferred):        
+    def _save(self, response, error, deferred, callback):        
         logging.info("[MongoORM] - save %s SUCCESS" % self.__collection__)
-        deferred.send(error)
+        deferred.send(error) if deferred else callback(error)
 
-    def remove(self, deferred):
+    def remove(self, deferred=None, callback=None):
         logging.info("[MongoORM] - remove %s(%s)" % (self.__collection__, self._id))
 
-        onresponse = functools.partial(self._remove, deferred=deferred)
+        onresponse = functools.partial(self._remove, deferred=deferred, callback=callback)
         self.get_collection().remove({'_id': self._id}, callback=onresponse)
 
-    def _remove(self, response, error, deferred):
+    def _remove(self, response, error, deferred, callback):
         logging.info("[MongoORM] - remove %s(%s) SUCCESS" % (self.__collection__, self._id))
-        deferred.send(error)
+        deferred.send(error) if deferred else callback(error)
 
-    def update(self, deferred, obj_data=None):
+    def update(self, deferred=None, callback=None, obj_data=None):
         logging.info("[MongoORM] - update %s(%s)" % (self.__collection__, self._id))
 
         if not obj_data:
             obj_data = self.as_dict()
 
-        onresponse = functools.partial(self._update, deferred=deferred)
+        onresponse = functools.partial(self._update, deferred=deferred, callback=callback)
         self.get_collection().update({'_id': self._id}, obj_data, safe=True, callback=onresponse)
 
-    def _update(self, response, error, deferred):        
+    def _update(self, response, error, deferred, callback):        
         logging.info("[MongoORM] - update %s(%s) SUCCESS" % (self.__collection__, self._id))
-        deferred.send(error)
+        deferred.send(error) if deferred else callback(error)
 
     def remove_all(self):
         return self.get_collection().remove()

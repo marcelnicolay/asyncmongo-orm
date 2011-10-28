@@ -1,0 +1,8 @@
+*.pyc
+dist/*
+build/*
+*.pydevproject
+*.project
+*.settings*.pyc
+*.settings
+asyncmongoorm.egg-info/*

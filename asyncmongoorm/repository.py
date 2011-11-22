@@ -188,8 +188,8 @@ class Repository(object):
         
         if deferred:
             deferred.send(error)
-
-         if callback:
+            
+        if callback:
             callback(error)
 
     def remove(self, deferred=None, callback=None):

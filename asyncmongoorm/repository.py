@@ -185,7 +185,12 @@ class Repository(object):
 
     def _save(self, response, error, deferred, callback):        
         logging.info("[MongoORM] - save %s SUCCESS" % self.__collection__)
-        deferred.send(error) if deferred else callback(error)
+        
+        if deferred:
+            deferred.send(error)
+
+         if callback:
+            callback(error)
 
     def remove(self, deferred=None, callback=None):
         logging.info("[MongoORM] - remove %s(%s)" % (self.__collection__, self._id))

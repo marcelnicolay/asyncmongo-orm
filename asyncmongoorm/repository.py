@@ -103,6 +103,35 @@ class Repository(object):
         deferred.send(total) if deferred else callback(total)
 
     @classmethod
+    def sum(cls, query=None, field=None, deferred=None, callback=None, **kw):
+        onresponse = functools.partial(cls._sum, deferred=deferred, callback=callback)
+        
+        db = get_database()
+
+        command = {
+            "group": {
+                'ns': cls.__collection__,
+                'cond': query,
+                'initial': {'csum': 0},
+                '$reduce': 'function(obj,prev){prev.csum+=obj.'+field+';}'
+            }
+        }
+
+        logging.debug("[MongoORM] - sum group command %s" % command)
+        db.command(command, callback=onresponse)
+        
+    @classmethod
+    def _sum(cls, result, error, deferred, callback):
+        
+        total = 0
+        if result['retval']:
+            total = result['retval'][0]['csum']
+
+        logging.debug("[MongoORM] - sum result %s" % total)
+
+        deferred.send(total) if deferred else callback(total)
+        
+    @classmethod
     def geo_near(cls, deferred, near, max_distance=None, num=None, spherical=None, unique_docs=None, query=None, **kw):
         onresponse = functools.partial(cls._geo_near, deferred=deferred)
 

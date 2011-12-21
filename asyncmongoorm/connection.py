@@ -1,7 +1,7 @@
+import logging
+
 from asyncmongo import Client
 from torneira import settings
-
-import logging
 
 __database__ = None
 

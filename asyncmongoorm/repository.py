@@ -1,15 +1,13 @@
 # coding: utf-8
+import logging
+import functools
+from datetime import datetime
+
 from asyncmongo import Client
+from bson.son import SON
 
 from asyncmongoorm.properties import __collections__
 from asyncmongoorm.connection import get_database
-
-from datetime import datetime
-
-from bson.son import SON
-
-import logging
-import functools
 
 class Repository(object):
 

@@ -21,22 +21,19 @@ class Repository(object):
             if attr_type.__class__.__name__ != 'Property':
                 continue
 
-            if isinstance(attr, (basestring, int, float, datetime)):
+            if isinstance(attr, (basestring, int, float, datetime, dict)):
                 items[attr_name] = attr
-
-            if hasattr(attr, 'serializable'):
+            elif hasattr(attr, 'serializable'):
                 items[attr.serializable] = apply(attr)
-
-            if isinstance(attr, list):
+            elif isinstance(attr, list):
                 items[attr_name] = []
                 for item in attr:
                     if isinstance(item, Repository):
                         items[attr_name] = item.as_dict()
                     else:
                         items[attr_name].append(item)
-
-            if isinstance(attr, dict):
-                items[attr_name] = attr
+            else:
+                items[attr_name] = str(attr)
 
         return items
 

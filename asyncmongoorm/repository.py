@@ -28,10 +28,12 @@ class Repository(object):
                 items[attr.serializable] = apply(attr)
 
             if isinstance(attr, list):
-                if len(attr) > 0 and isinstance(attr[0], dict):
-                    items[attr_name] = attr
-                else:
-                    items[attr_name] = [x.as_dict() for x in attr]
+                items[attr_name] = []
+                for item in attr:
+                    if isinstance(item, Repository):
+                        items[attr_name] = item.as_dict()
+                    else:
+                        items[attr_name].append(item)
 
             if isinstance(attr, dict):
                 items[attr_name] = attr

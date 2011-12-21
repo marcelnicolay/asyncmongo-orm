@@ -1,7 +1,7 @@
-import unittest2
-import fudge
+from datetime import datetime
 
-#import asyncmongoorm.properties
+import unittest2
+
 from asyncmongoorm.repository import Repository
 
 class Property(object):
@@ -14,22 +14,33 @@ class Property(object):
         self._data = value
 
 class MockClass(Repository):
-    my_property = Property(str)
-    my_status = Property(int)
+    name = Property(str)
+    status = Property(int)
+    dictionary = Property(dict)
+    created_at = Property(datetime)
+    items = Property(list)
 
     this_could_not_be_included = 1234
 
 class RepositoryTestCase(unittest2.TestCase):
     #@fudge.with_patched_object(asyncmongoorm.properties, 'Property', Property)
     def test_get_properties_as_dict(self):
+        now = datetime.now()
+
         obj = MockClass()
-        obj.my_property = 'my property'
-        obj.my_status = 1
+        obj.name = 'my property'
+        obj.status = 1
+        obj.dictionary = {'key1': 'value1'}
+        obj.created_at = now
+        obj.items = [1, 2, 3]
         obj.instance_attribute = 'testing'
 
         expected_dict = {
-            'my_property': 'my property',
-            'my_status': 1,
+            'name': 'my property',
+            'status': 1,
+            'dictionary': { 'key1': 'value1' },
+            'created_at': now,
+            'items': [1, 2, 3],
         }
 
         self.assertEquals(expected_dict, obj.as_dict())

@@ -30,7 +30,11 @@ class MockClass(Repository):
     items = Property(list)
     arbitrary_object = Property(ArbitraryObject)
 
-    this_could_not_be_included = 1234
+    arbitrary_attribute = 1234
+
+    @property
+    def my_property(self):
+        return 'this is correct'
 
 class RepositoryTestCase(unittest2.TestCase):
     def test_get_properties_as_dict(self):
@@ -78,3 +82,14 @@ class RepositoryTestCase(unittest2.TestCase):
         self.assertEquals(created.items, [1, 2, 3])
         self.assertIsInstance(created.arbitrary_object, ArbitraryObject)
         self.assertEquals(str(created.arbitrary_object), 'my data')
+
+    def test_cannot_overwrite_property_with_value_from_db(self):
+        now = datetime.now()
+
+        data = {
+            'my_property': 'this would not be set'
+        }
+
+        created = MockClass.create(data)
+
+        self.assertEquals(created.my_property, 'this is correct')

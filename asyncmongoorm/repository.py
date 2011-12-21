@@ -41,7 +41,10 @@ class Repository(object):
     def create(cls, dictionary):
         instance = cls()
         for (key, value) in dictionary.items():
-            setattr(instance, str(key), value)
+            try:
+                setattr(instance, str(key), value)
+            except AttributeError:
+                logging.warn("Attribute %s.%s could not be set" % (instance.__class__.__name__, key))
 
         return instance
 

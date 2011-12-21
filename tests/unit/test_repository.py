@@ -6,12 +6,15 @@ from asyncmongoorm.repository import Repository
 
 class Property(object):
     _data = None
-    def __init__(self, type):
-        pass
+    def __init__(self, type_):
+        self.type = type_
     def __get__(self, instance, owner):
         return self._data
     def __set__(self, instance, value):
-        self._data = value
+        if isinstance(value, self.type):
+            self._data = value
+        else:
+            self._data = self.type(value)
 
 class ArbitraryObject(object):
     def __init__(self, name):
@@ -52,3 +55,26 @@ class RepositoryTestCase(unittest2.TestCase):
         }
 
         self.assertEquals(expected_dict, obj.as_dict())
+
+    def test_create_object_from_dict(self):
+        now = datetime.now()
+
+        data = {
+            'name': 'my property',
+            'status': 1,
+            'dictionary': { 'key1': 'value1' },
+            'created_at': now,
+            'items': [1, 2, 3],
+            'arbitrary_object': 'my data',
+        }
+
+        created = MockClass.create(data)
+
+        self.assertIsInstance(created, MockClass)
+        self.assertEquals(created.name, 'my property')
+        self.assertEquals(created.status, 1)
+        self.assertEquals(created.dictionary, {'key1': 'value1'})
+        self.assertEquals(created.created_at, now)
+        self.assertEquals(created.items, [1, 2, 3])
+        self.assertIsInstance(created.arbitrary_object, ArbitraryObject)
+        self.assertEquals(str(created.arbitrary_object), 'my data')

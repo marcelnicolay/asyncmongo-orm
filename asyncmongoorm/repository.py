@@ -6,31 +6,35 @@ from datetime import datetime
 from asyncmongo import Client
 from bson.son import SON
 
-from asyncmongoorm.properties import __collections__
+from asyncmongoorm.properties import __collections__, Property
 from asyncmongoorm.connection import get_database
 
 class Repository(object):
 
     def as_dict(self):
         items = {}
-        for attrname in dir(self):
-            if attrname.startswith("_"):
+        for attr_name, attr_type in self.__class__.__dict__.iteritems():
+            if attr_name.startswith("_"):
                 continue
 
-            attr = getattr(self, attrname)
+            attr = getattr(self, attr_name)
+            if attr_type.__class__.__name__ != 'Property':
+                continue
+
             if isinstance(attr, (basestring, int, float, datetime)):
-                items[attrname] = attr
+                items[attr_name] = attr
+
             if hasattr(attr, 'serializable'):
                 items[attr.serializable] = apply(attr)
 
             if isinstance(attr, list):
                 if len(attr) > 0 and isinstance(attr[0], dict):
-                    items[attrname] = attr
+                    items[attr_name] = attr
                 else:
-                    items[attrname] = [x.as_dict() for x in attr]
+                    items[attr_name] = [x.as_dict() for x in attr]
 
             if isinstance(attr, dict):
-                items[attrname] = attr
+                items[attr_name] = attr
 
         return items
 

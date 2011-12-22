@@ -14,7 +14,7 @@ class Repository(object):
     def as_dict(self):
         items = {}
         for attr_name, attr_type in self.__class__.__dict__.iteritems():
-            if attr_name.startswith("_"):
+            if attr_name != '_id' and attr_name.startswith("_"):
                 continue
 
             attr = getattr(self, attr_name)

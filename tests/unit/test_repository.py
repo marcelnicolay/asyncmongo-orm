@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import unittest2
+from bson.objectid import ObjectId
 
 from asyncmongoorm.repository import Repository
 
@@ -23,6 +24,7 @@ class ArbitraryObject(object):
         return self.name
 
 class MockClass(Repository):
+    _id = Property(ObjectId)
     name = Property(str)
     status = Property(int)
     dictionary = Property(dict)
@@ -39,8 +41,10 @@ class MockClass(Repository):
 class RepositoryTestCase(unittest2.TestCase):
     def test_get_properties_as_dict(self):
         now = datetime.now()
+        dummy_id = ObjectId.from_datetime(now)
 
         obj = MockClass()
+        obj._id = dummy_id
         obj.name = 'my property'
         obj.status = 1
         obj.dictionary = {'key1': 'value1'}
@@ -50,6 +54,7 @@ class RepositoryTestCase(unittest2.TestCase):
         obj.instance_attribute = 'testing'
 
         expected_dict = {
+            '_id': str(dummy_id),
             'name': 'my property',
             'status': 1,
             'dictionary': { 'key1': 'value1' },

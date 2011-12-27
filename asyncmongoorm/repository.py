@@ -5,6 +5,7 @@ from datetime import datetime
 
 from asyncmongo import Client
 from bson.son import SON
+from bson.objectid import ObjectId
 
 from asyncmongoorm.properties import __collections__, Property
 from asyncmongoorm.connection import get_database
@@ -21,7 +22,7 @@ class Repository(object):
             if attr_type.__class__.__name__ != 'Property':
                 continue
 
-            if isinstance(attr, (basestring, int, float, datetime, dict)):
+            if isinstance(attr, (basestring, int, float, datetime, dict, ObjectId)):
                 items[attr_name] = attr
             elif hasattr(attr, 'serializable'):
                 items[attr.serializable] = apply(attr)

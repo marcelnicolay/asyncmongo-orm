@@ -30,6 +30,7 @@ class MockClass(Repository):
     dictionary = Property(dict)
     created_at = Property(datetime)
     items = Property(list)
+    true_or_false = Property(bool)
     arbitrary_object = Property(ArbitraryObject)
 
     arbitrary_attribute = 1234
@@ -49,16 +50,18 @@ class RepositoryTestCase(unittest2.TestCase):
         obj.status = 1
         obj.dictionary = {'key1': 'value1'}
         obj.created_at = now
+        obj.true_or_false = True
         obj.items = [1, 2, 3]
         obj.arbitrary_object = ArbitraryObject('my data')
         obj.instance_attribute = 'testing'
 
         expected_dict = {
-            '_id': str(dummy_id),
+            '_id': dummy_id,
             'name': 'my property',
             'status': 1,
             'dictionary': { 'key1': 'value1' },
             'created_at': now,
+            'true_or_false': True,
             'items': [1, 2, 3],
             'arbitrary_object': 'my data',
         }

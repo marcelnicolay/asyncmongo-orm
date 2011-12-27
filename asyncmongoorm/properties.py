@@ -23,7 +23,7 @@ class Property(object):
         return value
 
     def __set__(self, instance, value):
-        if self.type and not isinstance(value, self.type):
+        if self.type and not isinstance(value, self.type) and value is not None:
             try:
                 value = self.type(value)            
             except ValueError:

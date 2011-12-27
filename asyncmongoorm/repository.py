@@ -22,7 +22,9 @@ class Repository(object):
             if attr_type.__class__.__name__ != 'Property':
                 continue
 
-            if isinstance(attr, (basestring, int, float, datetime, dict, ObjectId)):
+            if attr is None:
+                items[attr_name] = None
+            elif isinstance(attr, (basestring, int, float, datetime, dict, ObjectId)):
                 items[attr_name] = attr
             elif hasattr(attr, 'serializable'):
                 items[attr.serializable] = apply(attr)

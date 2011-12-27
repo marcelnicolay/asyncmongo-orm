@@ -31,6 +31,7 @@ class MockClass(Repository):
     created_at = Property(datetime)
     items = Property(list)
     true_or_false = Property(bool)
+    will_be_none = Property(unicode)
     arbitrary_object = Property(ArbitraryObject)
 
     arbitrary_attribute = 1234
@@ -63,6 +64,7 @@ class RepositoryTestCase(unittest2.TestCase):
             'created_at': now,
             'true_or_false': True,
             'items': [1, 2, 3],
+            'will_be_none': None,
             'arbitrary_object': 'my data',
         }
 
@@ -88,6 +90,7 @@ class RepositoryTestCase(unittest2.TestCase):
         self.assertEquals(created.dictionary, {'key1': 'value1'})
         self.assertEquals(created.created_at, now)
         self.assertEquals(created.items, [1, 2, 3])
+        self.assertIsNone(created.will_be_none)
         self.assertIsInstance(created.arbitrary_object, ArbitraryObject)
         self.assertEquals(str(created.arbitrary_object), 'my data')
 

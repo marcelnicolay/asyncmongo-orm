@@ -7,7 +7,7 @@ from asyncmongo import Client
 from bson.son import SON
 from bson.objectid import ObjectId
 
-from asyncmongoorm.properties import __collections__, Property
+from asyncmongoorm.properties import Property
 from asyncmongoorm.connection import get_database
 
 class Repository(object):

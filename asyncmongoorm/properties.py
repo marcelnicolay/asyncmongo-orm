@@ -31,7 +31,7 @@ class Property(object):
 
         instance._data[self.name] = value
 
-__collections__ = {}
+__lazy_classes__ = {}
 
 class CollectionMetaClass(type):
     def __new__(cls, name, bases, attrs):
@@ -45,8 +45,8 @@ class CollectionMetaClass(type):
         new_class = super_new(cls, name, bases, attrs)
 
         if attrs.has_key("__collection__"):
-            global __collections__
-            __collections__[attrs.get("__collection__")] = new_class
+            global __lazy_classes__
+            __lazy_classes__[name] = new_class
 
         return new_class
 
@@ -54,13 +54,14 @@ class Collection(object):
 
     __metaclass__ = CollectionMetaClass
 
-    def __init__(self, **kw):
+    def __new__(cls, class_name=None, *args, **kwargs):
+        if class_name:
+            global __lazy_classes__
+            return __lazy_classes__.get(class_name)
+
+        return super(Collection, cls).__new__(cls, *args, **kwargs)
+        
+    def __init__(self):
         self._data = {}
 
-        # Assign initial values to instance
-        for attr_name in kw.keys():
-            try:
-                setattr(self, attr_name, kw.pop(attr_name))
-            except AttributeError:
-                pass
     

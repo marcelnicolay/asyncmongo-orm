@@ -222,5 +222,6 @@ class Repository(object):
         logging.info("[MongoORM] - update %s(%s) SUCCESS" % (self.__collection__, self._id))
         deferred.send(error) if deferred else callback(error)
 
-    def remove_all(self):
-        return self.get_collection().remove()
+    @classmethod
+    def remove_all(cls):
+        return cls.get_collection().remove()

@@ -2,6 +2,7 @@
 import logging
 import functools
 from datetime import datetime
+from tornado import gen
 
 from asyncmongo import Client
 from bson.son import SON
@@ -223,5 +224,7 @@ class Repository(object):
         deferred.send(error) if deferred else callback(error)
 
     @classmethod
-    def remove_all(cls):
-        return cls.get_collection().remove()
+    @gen.engine
+    def remove_all(cls, callback):
+        response, error = yield gen.Task(cls.get_collection().remove)
+        if callback: callback(error)

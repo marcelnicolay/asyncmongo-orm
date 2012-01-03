@@ -7,3 +7,8 @@ unit: clean
 	@echo "Running asyncmongoorm unit tests..."
 	@export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/asyncmongoorm  &&  \
 		nosetests -s --verbose --with-coverage --cover-package=asyncmongoorm tests/unit/*
+
+functional: clean
+	@echo "Running asyncmongoorm unit tests..."
+	@export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/asyncmongoorm  &&  \
+		nosetests -s --verbose --with-coverage --cover-package=asyncmongoorm tests/functional/*

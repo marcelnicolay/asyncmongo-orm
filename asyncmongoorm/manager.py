@@ -7,51 +7,14 @@ from asyncmongo import Client
 from bson.son import SON
 from bson.objectid import ObjectId
 
-from asyncmongoorm.properties import Property
-from asyncmongoorm.connection import get_database
+from asyncmongoorm.session import Session
 from tornado import gen
 
-class Repository(object):
+class Manager(object):
 
-    def as_dict(self):
-        items = {}
-        for attr_name, attr_type in self.__class__.__dict__.iteritems():
-            if attr_name != '_id' and attr_name.startswith("_"):
-                continue
-
-            attr = getattr(self, attr_name)
-            if attr_type.__class__.__name__ != 'Property':
-                continue
-
-            if attr is None:
-                items[attr_name] = None
-            elif isinstance(attr, (basestring, int, float, datetime, dict, ObjectId)):
-                items[attr_name] = attr
-            elif hasattr(attr, 'serializable'):
-                items[attr.serializable] = apply(attr)
-            elif isinstance(attr, list):
-                items[attr_name] = []
-                for item in attr:
-                    if isinstance(item, Repository):
-                        items[attr_name] = item.as_dict()
-                    else:
-                        items[attr_name].append(item)
-            else:
-                items[attr_name] = str(attr)
-
-        return items
-
-    @classmethod
-    def create(cls, dictionary):
-        instance = cls()
-        for (key, value) in dictionary.items():
-            try:
-                setattr(instance, str(key), value)
-            except AttributeError:
-                logging.warn("Attribute %s.%s could not be set" % (instance.__class__.__name__, key))
-
-        return instance
-
+    def __init__(self, collection):
+        self.collection = collection
+    
     @classmethod
     @gen.engine
     def find_one(cls, query, callback):
@@ -77,7 +40,7 @@ class Repository(object):
     @classmethod
     @gen.engine
     def count(cls, query=None, callback=None, **kw):
-        db = get_database()
+        db = Session()
 
         command = {
             "count": cls.__collection__
@@ -96,7 +59,7 @@ class Repository(object):
     @classmethod
     @gen.engine
     def sum(cls, query=None, field=None, callback=None, **kw):
-        db = get_database()
+        db = Session()
 
         command = {
             "group": {
@@ -120,7 +83,7 @@ class Repository(object):
     @classmethod
     @gen.engine
     def geo_near(cls, near, max_distance=None, num=None, spherical=None, unique_docs=None, query=None, callback=None, **kw):
-        db = get_database()
+        db = Session()
 
         command = SON({"geoNear": cls.__collection__})
 
@@ -154,7 +117,7 @@ class Repository(object):
 
     @classmethod
     def get_collection(cls):
-        db = get_database()
+        db = Session()
         return getattr(db, cls.__collection__)
 
     @gen.engine

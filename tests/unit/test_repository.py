@@ -1,3 +1,4 @@
+"""
 from datetime import datetime
 
 import unittest2
@@ -104,3 +105,4 @@ class RepositoryTestCase(unittest2.TestCase):
         created = MockClass.create(data)
 
         self.assertEquals(created.my_property, 'this is correct')
+"""

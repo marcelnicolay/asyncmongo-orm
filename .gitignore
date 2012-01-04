@@ -6,3 +6,5 @@ build/*
 *.settings*.pyc
 *.settings
 asyncmongoorm.egg-info/*
+.idea/
+.coverage

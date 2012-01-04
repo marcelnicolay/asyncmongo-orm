@@ -1,3 +1,10 @@
+asyncmongo==1.1.1
 coverage==3.5.1
+fudge==1.0.3
+ipdb==0.6.1
+ipython==0.12
 nose==1.1.2
+pymongo==2.1
+tornado==2.1.1
 unittest2==0.5.1
+wsgiref==0.1.2

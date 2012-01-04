@@ -1,14 +1,10 @@
 # coding: utf-8
 import logging
 import functools
-from datetime import datetime
-
-from asyncmongo import Client
 from bson.son import SON
-from bson.objectid import ObjectId
-
-from asyncmongoorm.session import Session
 from tornado import gen
+from asyncmongoorm.session import Session
+
 
 class Manager(object):
 

@@ -12,7 +12,7 @@ class CollectionTestCase(unittest2.TestCase):
         __lazy_classes__ = {}
         
     def test_can_be_set_field_name_collection(self):
-        
+
         FakeField = fudge.Fake()
         fake_field_instance = fudge.Fake().has_attr(name=None).has_attr(__class__=Field)
 

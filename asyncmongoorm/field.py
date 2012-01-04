@@ -11,9 +11,6 @@ class Field(object):
         self.name = name
     
     def __get__(self, instance, owner):
-        if instance is None:
-            return self
-
         value = instance._data.get(self.name)
         if value is None:
             return self.default
@@ -25,8 +22,8 @@ class Field(object):
         if value is not None and not isinstance(value, self.field_type):
             try:
                 value = self.field_type(value)
-            except ValueError:
-                raise(ValueError("type of %s must be %s" % (self.name, self.fied_type)))
+            except TypeError:
+                raise(TypeError("type of %s must be %s" % (self.name, self.field_type)))
 
         instance._data[self.name] = value
 
@@ -76,4 +73,4 @@ class ObjectIdField(Field):
 
     def __init__(self, *args, **kargs):
 
-        super(ObjectField, self).__init__(field_type=ObjectId, *args, **kargs)
+        super(ObjectIdField, self).__init__(field_type=ObjectId, *args, **kargs)

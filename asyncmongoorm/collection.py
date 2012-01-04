@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 from asyncmongoorm.field import Field
 
 __lazy_classes__ = {}
@@ -37,44 +38,24 @@ class Collection(object):
     def __init__(self):
         self._data = {}
         
-    """
+
     def as_dict(self):
         items = {}
         for attr_name, attr_type in self.__class__.__dict__.iteritems():
-            if attr_name != '_id' and attr_name.startswith("_"):
-                continue
-
-            attr = getattr(self, attr_name)
-            if attr_type.__class__.__name__ != 'Field':
-                continue
-
-            if attr is None:
-                items[attr_name] = None
-            elif isinstance(attr, (basestring, int, float, datetime, dict, ObjectId)):
-                items[attr_name] = attr
-            elif hasattr(attr, 'serializable'):
-                items[attr.serializable] = apply(attr)
-            elif isinstance(attr, list):
-                items[attr_name] = []
-                for item in attr:
-                    if isinstance(item, Repository):
-                        items[attr_name] = item.as_dict()
-                    else:
-                        items[attr_name].append(item)
-            else:
-                items[attr_name] = str(attr)
-
-        return items
-
+            if isinstance(attr_type, Field):
+                attr_value = getattr(self, attr_name)
+                if attr_value:
+                    items[attr_name] = attr_value
+        return items    
+    
     @classmethod
     def create(cls, dictionary):
         instance = cls()
         for (key, value) in dictionary.items():
             try:
                 setattr(instance, str(key), value)
-            except AttributeError:
-                logging.warn("Attribute %s.%s could not be set" % (instance.__class__.__name__, key))
+            except TypeError, e:
+                logging.warn(e)
 
         return instance
         
-    """

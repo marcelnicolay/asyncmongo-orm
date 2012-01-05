@@ -23,7 +23,8 @@ class CollectionMetaClass(type):
         if 'Collection' in [b.__name__ for b in bases]:
             global __lazy_classes__
             __lazy_classes__[name] = new_class
-            cls.objects = Manager(collection=cls)
+
+            cls.objects = Manager(collection=new_class)
         
         return new_class
 

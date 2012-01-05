@@ -1,4 +1,4 @@
-asyncmongo==1.1.1
+https://github.com/bitly/asyncmongo/tarball/master
 coverage==3.5.1
 fudge==1.0.3
 nose==1.1.2

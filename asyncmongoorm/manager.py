@@ -12,16 +12,17 @@ class Manager(object):
     
     @gen.engine
     def find_one(self, query, callback):
-        response, error = yield gen.Task(Session(self.collection.__collection__).find_one, query=query)
-        instance = self.collection.create(response) if response else None
+        result, error = yield gen.Task(Session(self.collection.__collection__).find_one, query)
+        
+        instance = self.collection.create(result[0]) if result else None
         
         callback(instance) 
    
     @gen.engine
     def find(self, query, callback, **kw):
-        result, error = yield gen.Task(Session(self.collection.__collection__).find, query=query, **kw)
+        result, error = yield gen.Task(Session(self.collection.__collection__).find, query, **kw)
         items = []
-        for item in result:
+        for item in result[0]:
             items.append(self.collection.create(item))
 
         callback(items)
@@ -37,7 +38,7 @@ class Manager(object):
 
         result, error = yield gen.Task(Session().command, command)
         
-        total = int(result['n'])
+        total = int(result[0]['n'])
         
         callback(total)
         
@@ -54,8 +55,8 @@ class Manager(object):
 
         result, error = yield gen.Task(Session().command, command)
         total = 0
-        if result['retval']:
-            total = result['retval'][0]['csum']
+        if result[0]['retval']:
+            total = result[0]['retval'][0]['csum']
 
         callback(total)
         
@@ -85,11 +86,14 @@ class Manager(object):
         result, error = yield gen.Task(Session().command, command)
         items = []
 
-        if result['ok']:
-            for item in result['results']:
+        if result[0]['ok']:
+            for item in result[0]['results']:
                 items.append(self.collection.create(item['obj']))
         
         callback(items)
 
-    def drop(self):
-        return Session(self.collection.__collection__).remove()
+    @gen.engine
+    def drop(self, callback):
+        yield gen.Task(Session(self.collection.__collection__).remove)
+        
+        callback()

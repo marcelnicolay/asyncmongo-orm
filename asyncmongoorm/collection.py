@@ -11,20 +11,18 @@ __lazy_classes__ = {}
 class CollectionMetaClass(type):
 
     def __new__(cls, name, bases, attrs):
-        super_new = super(CollectionMetaClass, cls).__new__
-
+        global __lazy_classes__
+        
         # Add the document's fields to the _data
         for attr_name, attr_value in attrs.items():
             if hasattr(attr_value, "__class__") and issubclass(attr_value.__class__, Field):
                 attr_value.name = attr_name
                 
-        new_class = super_new(cls, name, bases, attrs)
-        
-        if 'Collection' in [b.__name__ for b in bases]:
-            global __lazy_classes__
-            __lazy_classes__[name] = new_class
+        new_class = super(CollectionMetaClass, cls).__new__(cls, name, bases, attrs)
 
-            cls.objects = Manager(collection=new_class)
+        __lazy_classes__[name] = new_class
+        
+        cls.objects = Manager(collection=new_class)
         
         return new_class
 

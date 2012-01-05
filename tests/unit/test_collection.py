@@ -38,6 +38,16 @@ class CollectionTestCase(unittest2.TestCase):
             pass
         
         self.assertTrue(issubclass(collection.Collection("CollectionTest"), CollectionTest))
+
+    def test_can_be_load_child_lazy_class(self):
+
+        class CollectionTest(collection.Collection):
+            pass
+            
+        class ChildCollectionTest(CollectionTest):
+            pass
+
+        self.assertTrue(issubclass(collection.Collection("ChildCollectionTest"), ChildCollectionTest))
         
     def test_collection_has_data_attr(self):
         

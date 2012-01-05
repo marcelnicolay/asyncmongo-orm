@@ -17,7 +17,7 @@ class ManagerTestCase(unittest2.TestCase):
 
         def fake_find_one(query, callback):
             self.assertEqual(query, {'_id':1})
-            callback(({'some_attr': 'some_value'}, None))
+            callback((({'some_attr': 'some_value'},), None))
 
         fake_session = fudge.Fake()
         fake_session.is_callable().with_args('some_collection').returns_fake().has_attr(find_one=fake_find_one)
@@ -38,7 +38,7 @@ class ManagerTestCase(unittest2.TestCase):
         def fake_find(query, callback, limit):
             self.assertEqual(query, {'_id':1})
             self.assertEquals(1, limit)
-            callback(([{'some_attr': 'some_value'}, {'some_attr': 'another_value'}], None))
+            callback((([{'some_attr': 'some_value'}, {'some_attr': 'another_value'}],), None))
 
         fake_session = fudge.Fake()
         fake_session.is_callable().with_args('some_collection').returns_fake().has_attr(find=fake_find)
@@ -57,7 +57,7 @@ class ManagerTestCase(unittest2.TestCase):
 
         def fake_command(command, callback):
             self.assertEqual({"count": 'some_collection'}, command)
-            callback(({'n': 10}, None))
+            callback((({'n': 10},), None))
 
         fake_session = fudge.Fake()
         fake_session.is_callable().returns_fake().has_attr(command=fake_command)
@@ -76,7 +76,7 @@ class ManagerTestCase(unittest2.TestCase):
         def fake_command(command, callback):
             self.assertEqual('some_collection', command['count'])
             self.assertEqual({'tag': 'some_tag'}, command['query'])
-            callback(({'n': 10}, None))
+            callback((({'n': 10},), None))
 
         fake_session = fudge.Fake()
         fake_session.is_callable().returns_fake().has_attr(command=fake_command)
@@ -97,7 +97,7 @@ class ManagerTestCase(unittest2.TestCase):
             self.assertEqual({'tag': 'some_tag'}, command['group']['cond'])
             self.assertEqual({'csum': 0}, command['group']['initial'])
             self.assertEqual('function(obj,prev){prev.csum+=obj.some_field;}', command['group']['$reduce'])
-            callback(({'retval': [{'csum':20}]}, None))
+            callback((({'retval': [{'csum':20}]},), None))
 
         fake_session = fudge.Fake()
         fake_session.is_callable().returns_fake().has_attr(command=fake_command)
@@ -125,7 +125,7 @@ class ManagerTestCase(unittest2.TestCase):
                 'spherical': False
             }
             self.assertEqual(expected_command, command)
-            callback(({'ok': 1, 'results':[{'obj':{'key':'value'}}]}, None))
+            callback((({'ok': 1, 'results':[{'obj':{'key':'value'}}]},), None))
 
         fake_session = fudge.Fake()
         fake_session.is_callable().returns_fake().has_attr(command=fake_command)
@@ -142,11 +142,13 @@ class ManagerTestCase(unittest2.TestCase):
             self.assertEquals(['should_be_instance'], result)
 
     @fudge.test
+    @gen.engine
     def test_drop(self):
+
         fake_session = fudge.Fake()
         fake_session.is_callable().with_args('some_collection').returns_fake().expects('remove')
 
         fake_collection = fudge.Fake().has_attr(__collection__='some_collection')
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object = manager.Manager(fake_collection)
-            manager_object.drop()
+            yield gen.Task(manager_object.drop)

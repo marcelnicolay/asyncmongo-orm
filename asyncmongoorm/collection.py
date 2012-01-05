@@ -2,6 +2,7 @@
 import functools
 import logging
 from tornado import gen
+from asyncmongoorm.manager import Manager
 from asyncmongoorm.session import Session
 from asyncmongoorm.field import Field
 
@@ -22,8 +23,7 @@ class CollectionMetaClass(type):
         if 'Collection' in [b.__name__ for b in bases]:
             global __lazy_classes__
             __lazy_classes__[name] = new_class
-
-#        cls.objects = Manager(collection=cls)
+            cls.objects = Manager(collection=cls)
         
         return new_class
 

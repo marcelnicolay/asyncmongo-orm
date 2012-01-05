@@ -1,9 +1,9 @@
 import unittest2
 import fudge
-from fudge.inspector import arg
 
 from tornado import gen
 from asyncmongoorm import collection
+from asyncmongoorm.manager import Manager
 from asyncmongoorm.field import *
 from bson import ObjectId
 
@@ -24,6 +24,13 @@ class CollectionTestCase(unittest2.TestCase):
             should_be_value = FakeField()
     
         self.assertEquals(fake_field_instance.name, "should_be_value")
+
+    def test_can_set_manager_object_in_collection(self):
+
+        class CollectionTest(collection.Collection):
+            should_be_value = StringField()
+
+        self.assertTrue(isinstance(CollectionTest.objects, Manager))
         
     def test_can_be_load_lazy_class(self):
         

@@ -1,5 +1,8 @@
 # coding: utf-8
+import functools
 import logging
+from tornado import gen
+from asyncmongoorm.session import Session
 from asyncmongoorm.field import Field
 
 __lazy_classes__ = {}
@@ -58,4 +61,27 @@ class Collection(object):
                 logging.warn(e)
 
         return instance
-        
+
+    @gen.engine
+    def save(self, callback=None):
+        response, error = yield gen.Task(Session(self.__collection__).insert, self.as_dict(), safe=True)
+
+        if callback:
+            callback(error)
+
+    @gen.engine
+    def remove(self, callback=None):
+        response, error = yield gen.Task(Session(self.__collection__).remove, {'_id': self._id})
+
+        if callback:
+            callback(error)
+
+    @gen.engine
+    def update(self, obj_data=None, callback=None):
+        if not obj_data:
+            obj_data = self.as_dict()
+
+        response, error = yield gen.Task(Session(self.__collection__).update, {'_id': self._id}, obj_data, safe=True)
+
+        if callback:
+            callback(error)

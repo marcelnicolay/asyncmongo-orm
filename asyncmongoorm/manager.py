@@ -1,6 +1,5 @@
 # coding: utf-8
 import logging
-import functools
 from bson.son import SON
 from tornado import gen
 from asyncmongoorm.session import Session
@@ -115,38 +114,6 @@ class Manager(object):
     def get_collection(cls):
         db = Session()
         return getattr(db, cls.__collection__)
-
-    @gen.engine
-    def save(self, callback=None):
-        logging.info("[MongoORM] - save %s" % (self.__collection__))
-
-        response, error = yield gen.Task(self.get_collection().insert, self.as_dict(), safe=True)
-
-        if callback:
-            callback(error)
-
-    @gen.engine
-    def remove(self, callback=None):
-        logging.info("[MongoORM] - remove %s(%s)" % (self.__collection__, self._id))
-
-        onresponse = functools.partial(self._remove, deferred=deferred, callback=callback)
-        response, error = yield gen.Task(self.get_collection().remove, {'_id': self._id})
-
-        if callback:
-            callback(error)
-
-    @gen.engine
-    def update(self, obj_data=None, callback=None):
-        logging.info("[MongoORM] - update %s(%s)" % (self.__collection__, self._id))
-
-        if not obj_data:
-            obj_data = self.as_dict()
-
-        onresponse = functools.partial(self._update, deferred=deferred, callback=callback)
-        response, error = yield gen.Task(self.get_collection().update, {'_id': self._id}, obj_data, safe=True)
-
-        if callback:
-            callback(error)
 
     @classmethod
     def remove_all(cls):

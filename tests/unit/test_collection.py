@@ -1,7 +1,9 @@
 import unittest2
 import fudge
+from fudge.inspector import arg
 
-from asyncmongoorm.collection import Collection, __lazy_classes__
+from tornado import gen
+from asyncmongoorm import collection
 from asyncmongoorm.field import *
 from bson import ObjectId
 
@@ -18,28 +20,28 @@ class CollectionTestCase(unittest2.TestCase):
 
         FakeField.is_callable().returns(fake_field_instance)
 
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             should_be_value = FakeField()
     
         self.assertEquals(fake_field_instance.name, "should_be_value")
         
     def test_can_be_load_lazy_class(self):
         
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             pass
         
-        self.assertTrue(issubclass(Collection("CollectionTest"), CollectionTest))
+        self.assertTrue(issubclass(collection.Collection("CollectionTest"), CollectionTest))
         
     def test_collection_has_data_attr(self):
         
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             pass
         
         collection_test = CollectionTest()
         self.assertTrue(hasattr(collection_test, '_data'))
         
     def test_can_get_collection_as_dict(self):
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             string_attr = StringField()
             integer_attr = IntegerField()
             bool_attr = BooleanField()
@@ -83,7 +85,7 @@ class CollectionTestCase(unittest2.TestCase):
             'object_id_attr': object_id,
         }
         
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             string_attr = StringField()
             integer_attr = IntegerField()
             bool_attr = BooleanField()
@@ -104,7 +106,7 @@ class CollectionTestCase(unittest2.TestCase):
         
     def test_create_attribute_if_model_does_not_contains_field(self):
         
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             string_attr = StringField()
             
         object_dict = {
@@ -118,7 +120,7 @@ class CollectionTestCase(unittest2.TestCase):
         
     def test_ignore_attribute_with_different_field_type(self):
         
-        class CollectionTest(Collection):
+        class CollectionTest(collection.Collection):
             string_attr = DateTimeField()
             
         object_dict = {
@@ -127,3 +129,107 @@ class CollectionTestCase(unittest2.TestCase):
         
         object_instance = CollectionTest.create(object_dict)
         self.assertIsNone(object_instance.string_attr)
+
+    @fudge.test
+    @gen.engine
+    def test_can_save_collection(self):
+
+        class CollectionTest(collection.Collection):
+            any_attr = StringField()
+            __collection__ = 'some_collection'
+
+        collection_test_instance = CollectionTest()
+        collection_test_instance.any_attr = 'some_value'
+
+        def fake_insert(data, callback, safe):
+            self.assertEquals({'any_attr':'some_value'}, data)
+            self.assertEquals(True, safe)
+
+            callback((None, 'should_be_error'))
+
+        fake_session = fudge.Fake()
+        fake_session.is_callable().with_args('some_collection')\
+                        .returns_fake().has_attr(insert=fake_insert)
+
+        with fudge.patched_context(collection, 'Session', fake_session):
+            error = yield gen.Task(collection_test_instance.save)
+            self.assertEquals('should_be_error', error)
+
+    @fudge.test
+    @gen.engine
+    def test_can_remove_collection(self):
+
+        class CollectionTest(collection.Collection):
+            __collection__ = 'some_collection'
+            _id = 1
+
+        collection_test_instance = CollectionTest()
+
+        def fake_remove(query, callback):
+            self.assertEquals({'_id':1}, query)
+
+            callback((None, 'should_be_error'))
+
+        fake_session = fudge.Fake()
+        fake_session.is_callable().with_args('some_collection')\
+                        .returns_fake().has_attr(remove=fake_remove)
+
+        with fudge.patched_context(collection, 'Session', fake_session):
+            error = yield gen.Task(collection_test_instance.remove)
+            self.assertEquals('should_be_error', error)
+
+    @fudge.test
+    @gen.engine
+    def test_can_update_collection_with_object_data(self):
+
+        class CollectionTest(collection.Collection):
+            __collection__ = 'some_collection'
+            _id = 1
+            some_attr = StringField()
+
+        collection_test_instance = CollectionTest()
+        collection_test_instance.some_attr = 'first'
+
+        object_data = {'some_attr': 'second'}
+
+        def fake_update(query, data, callback, safe):
+            self.assertEquals({'_id':1}, query)
+            self.assertEquals(object_data, data)
+            self.assertEquals(True, safe)
+
+            callback((None, 'should_be_error'))
+
+        fake_session = fudge.Fake()
+        fake_session.is_callable().with_args('some_collection')\
+                        .returns_fake().has_attr(update=fake_update)
+
+        with fudge.patched_context(collection, 'Session', fake_session):
+            error = yield gen.Task(collection_test_instance.update, object_data)
+            self.assertEquals('should_be_error', error)
+
+    @fudge.test
+    @gen.engine
+    def test_can_update_collection_without_object_data(self):
+
+        class CollectionTest(collection.Collection):
+            __collection__ = 'some_collection'
+            _id = 1
+            some_attr = StringField()
+
+        collection_test_instance = CollectionTest()
+        collection_test_instance.some_attr = 'first'
+
+        def fake_update(query, data, callback, safe):
+            self.assertEquals(query, {'_id':1})
+            self.assertEquals(data, {'some_attr': 'first'})
+            self.assertEquals(safe, True)
+
+            callback((None, 'should_be_error'))
+
+        fake_session = fudge.Fake()
+        fake_session.is_callable().with_args('some_collection')\
+                        .returns_fake().has_attr(update=fake_update)
+
+        with fudge.patched_context(collection, 'Session', fake_session):
+            error = yield gen.Task(collection_test_instance.update)
+            self.assertEquals('should_be_error', error)

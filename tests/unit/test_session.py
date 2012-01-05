@@ -43,4 +43,7 @@ class SessionTestCase(unittest2.TestCase):
         with self.assertRaises(ValueError):                        
             session.Session()
         
-        
+    def test_can_get_session_passing_collection_name_as_argumnent(self):
+        session.Session._session = fudge.Fake().has_attr(collection_name='should_be_collection')
+        self.assertEquals('should_be_collection', session.Session('collection_name'))
+

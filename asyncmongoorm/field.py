@@ -11,6 +11,9 @@ class Field(object):
         self.name = name
     
     def __get__(self, instance, owner):
+        if not instance:
+            return self
+            
         value = instance._data.get(self.name)
         if value is None:
             return self.default

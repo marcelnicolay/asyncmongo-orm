@@ -71,7 +71,7 @@ class CollectionTestCase(unittest2.TestCase):
         collection_test = CollectionTest()
         collection_test.string_attr = 'string_attr'
         collection_test.integer_attr = 1
-        collection_test.bool_attr = True
+        collection_test.bool_attr = False
         collection_test.float_attr = 1.0
         collection_test.list_attr = [1,2,3]
         collection_test.object_attr = {'chave': 'valor'}
@@ -81,7 +81,7 @@ class CollectionTestCase(unittest2.TestCase):
         expected_dict = {
             'string_attr': 'string_attr',
             'integer_attr': 1,
-            'bool_attr': True,
+            'bool_attr': False,
             'float_attr': 1.0,
             'list_attr': [1,2,3],
             'object_attr': {'chave': 'valor'},

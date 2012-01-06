@@ -22,7 +22,7 @@ class CollectionMetaClass(type):
 
         __lazy_classes__[name] = new_class
         
-        cls.objects = Manager(collection=new_class)
+        new_class.objects = Manager(collection=new_class)
         
         return new_class
 

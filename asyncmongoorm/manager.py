@@ -14,7 +14,9 @@ class Manager(object):
     def find_one(self, query, callback):
         result, error = yield gen.Task(Session(self.collection.__collection__).find_one, query)
         
-        instance = self.collection.create(result[0]) if result else None
+        instance = None
+        if result and result[0]:
+            instance = self.collection.create(result[0])
         
         callback(instance) 
    

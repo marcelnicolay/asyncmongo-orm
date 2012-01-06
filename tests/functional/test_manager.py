@@ -26,13 +26,46 @@ class ManagerTestCase(testing.AsyncTestCase):
         
     def get_new_ioloop(self):
         return IOLoop.instance()
+
+    def test_find_one(self):
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "string value"
+        collection_test.save(callback=self.stop)
+        self.wait()
+
+        other_collection_test = CollectionTest()
+        other_collection_test._id = ObjectId()
+        other_collection_test.string_attr = "string value"
+        other_collection_test.save(callback=self.stop)
+        self.wait()
+
+        CollectionTest.objects.find_one({'string_attr':"string value"}, callback=self.stop)
+        collections_found = self.wait()
+
+        self.assertEquals(collection_test._id, collections_found._id)
     
+    def test_find_one_not_found(self):
+
+        CollectionTest.objects.find_one({'string_attr':"string value"}, callback=self.stop)
+        collections_found = self.wait()
+
+        self.assertEquals(None, collections_found)
+
     def test_find(self):
         
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "string value"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
+        
+        other_collection_test = CollectionTest()
+        other_collection_test._id = ObjectId()
+        other_collection_test.string_attr = "string value"
+        other_collection_test.save(callback=self.stop)
+        self.wait()
         
         CollectionTest.objects.find({'string_attr':"string value"}, callback=self.stop)
         collections_found = self.wait()

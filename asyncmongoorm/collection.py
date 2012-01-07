@@ -2,6 +2,7 @@
 import functools
 import logging
 from tornado import gen
+from asyncmongoorm.signal import pre_save, post_save
 from asyncmongoorm.manager import Manager
 from asyncmongoorm.session import Session
 from asyncmongoorm.field import Field
@@ -63,10 +64,13 @@ class Collection(object):
 
     @gen.engine
     def save(self, callback=None):
+        pre_save.send(sender=self.__class__, instance=self)
         response, error = yield gen.Task(Session(self.__collection__).insert, self.as_dict(), safe=True)
 
         if callback:
             callback(error)
+
+        post_save.send(sender=self.__class__, instance=self)
 
     @gen.engine
     def remove(self, callback=None):

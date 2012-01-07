@@ -47,7 +47,7 @@ class Collection(object):
         for attr_name, attr_type in self.__class__.__dict__.iteritems():
             if isinstance(attr_type, Field):
                 attr_value = getattr(self, attr_name)
-                if attr_value:
+                if attr_value != None:
                     items[attr_name] = attr_value
         return items    
     

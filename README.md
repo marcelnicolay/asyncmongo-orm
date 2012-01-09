@@ -85,7 +85,8 @@ signals
     from asyncmongoorm.session import Session
     from asyncmongoorm.field import StringField, ObjectIdField, BooleanField, DateTimeField
     from asyncmongoorm.signal import pre_save, receiver
-
+    from bson import ObjectId
+    
     import tornado.web
     from tornado import gen
 

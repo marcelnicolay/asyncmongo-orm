@@ -26,3 +26,9 @@ def receiver(signal, sender):
 
 pre_save = Signal()
 post_save = Signal()
+
+pre_remove = Signal()
+post_remove = Signal()
+
+pre_update = Signal()
+post_update = Signal()

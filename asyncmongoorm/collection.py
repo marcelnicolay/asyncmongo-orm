@@ -2,7 +2,7 @@
 import functools
 import logging
 from tornado import gen
-from asyncmongoorm.signal import pre_save, post_save
+from asyncmongoorm.signal import pre_save, post_save, pre_remove, post_remove, pre_update, post_update
 from asyncmongoorm.manager import Manager
 from asyncmongoorm.session import Session
 from asyncmongoorm.field import Field
@@ -65,26 +65,35 @@ class Collection(object):
     @gen.engine
     def save(self, callback=None):
         pre_save.send(sender=self.__class__, instance=self)
+
         response, error = yield gen.Task(Session(self.__collection__).insert, self.as_dict(), safe=True)
+
+        post_save.send(sender=self.__class__, instance=self)
 
         if callback:
             callback(error)
 
-        post_save.send(sender=self.__class__, instance=self)
-
     @gen.engine
     def remove(self, callback=None):
+        pre_remove.send(sender=self.__class__, instance=self)
+
         response, error = yield gen.Task(Session(self.__collection__).remove, {'_id': self._id})
+
+        post_remove.send(sender=self.__class__, instance=self)
 
         if callback:
             callback(error)
 
     @gen.engine
     def update(self, obj_data=None, callback=None):
+        pre_update.send(sender=self.__class__, instance=self)
+
         if not obj_data:
             obj_data = self.as_dict()
 
         response, error = yield gen.Task(Session(self.__collection__).update, {'_id': self._id}, obj_data, safe=True)
+
+        post_update.send(sender=self.__class__, instance=self)
 
         if callback:
             callback(error)

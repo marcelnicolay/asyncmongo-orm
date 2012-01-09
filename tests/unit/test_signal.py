@@ -66,7 +66,7 @@ class SignalTestCase(unittest2.TestCase):
 
     def test_send_signal_of_a_type_only_calls_correct_handlers(self):
         executed_receivers = []
-        some_singal = signal.Signal()
+        some_signal = signal.Signal()
 
         class FirstCollection():
             pass
@@ -74,15 +74,15 @@ class SignalTestCase(unittest2.TestCase):
         class SecondCollection():
             pass
 
-        @signal.receiver(some_singal, sender=FirstCollection)
+        @signal.receiver(some_signal, sender=FirstCollection)
         def first_receiver(sender, instance):
             executed_receivers.append(1)
 
-        @signal.receiver(some_singal, sender=SecondCollection)
+        @signal.receiver(some_signal, sender=SecondCollection)
         def second_receiver(sender, instance):
             executed_receivers.append(2)
 
-        some_singal.send(sender=FirstCollection, instance=FirstCollection())
+        some_signal.send(sender=FirstCollection, instance=FirstCollection())
 
         self.assertIn(1, executed_receivers)
         self.assertNotIn(2, executed_receivers)

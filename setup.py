@@ -35,6 +35,7 @@ setup(
                    'Programming Language :: Python :: 2.6',
                    'Topic :: Software Development :: Libraries :: Application Frameworks',
                    ],
+    requires=['pymongo (>=2.1)', 'tornado (>=2.1.1)', 'simplexml (>=0.1.4)'],
     packages = find_packages(),
     package_dir = {"asyncmongoorm": "asyncmongoorm"},
     include_package_data = True,

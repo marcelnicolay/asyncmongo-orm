@@ -11,38 +11,55 @@ Installing: `pip install asyncmongoorm`
 Usage
 --------------
 
-    Collection:
+    from asyncmongoorm.collection import Collection
+    from asyncmongoorm.session import Session
+    from asyncmongoorm.field import StringField, ObjectIdField, BooleanField, DateTimeField
+    from datetime import datetime
+    import tornado.web
+    from tornado import gen
 
-    >>> from asyncmongoorm.collection import Collection
-    >>> from asyncmongoorm.session import Session
-    >>> from asyncmongoorm.field import StringField, ObjectIdField, BooleanField, DateTimeField
-    >>> from datetime import datetime
-    >>>
-    >>> Session.create('localhost', 27017, 'asyncmongo_test') # create asyncmongo session client
-    >>>
-    >>> class User(Collection):
-    >>>     __collection__ = "user"
-    >>> 
-    >>>     _id = ObjectIdField()
-    >>>     name = StringField()
-    >>>     active = BooleanField()
-    >>>     created = DateTimeField()
-    >>>
-
-    >>> #save data
-
-    >>> user = User()
-    >>> user.name = "User name"
-    >>> user.active = True
-    >>> user.created = datetime.now()
-    >>> user.save()
+    class User(Collection):
+        __collection__ = "user"
+        
+        _id = ObjectIdField()
+        name = StringField()
+        active = BooleanField()
+        created = DateTimeField()
+        
+    Session.create('localhost', 27017, 'asyncmongo_test') # create asyncmongo session client
     
-    >>> # update date
-    >>> user.name = "New name"
-    >>> user.update()
+    class Handler(tornado.web.RequestHandler):
 
-    >>> # remove data    
-    >>> user.remove()
+        @tornado.web.asynchronous
+        @gen.engine
+        def get(self):
+            user = User()
+            user.name = "User name"
+            user.active = True
+            user.created = datetime.now()
+
+            yield gen.Task(user.save)
+
+            # update date
+            user.name = "New name"
+            yield gen.Task(user.update)
+
+            # find one object
+            user_found = yield gen.Task(User.objects.find_one, user._id)
+            
+            # find many objects
+            new_user = User()
+            new_user.name = "new user name"
+            new_user.user.active = True
+            new_user.created = datetime.now()
+            
+            users_actives = yield gen.Task(User.objects.find, {'active': True})
+            
+            users_actives[0].active = False
+            yield gen.Task(users_actives[0].save)
+
+            # remove object
+            yield gen.Task(user_found.remove)
 
 Requirements
 ------------

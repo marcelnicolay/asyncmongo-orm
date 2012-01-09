@@ -3,12 +3,20 @@ Asyncmongo-ORM
 
 Asyncmongo-ORM is a object-relation mapping for asyncmongo. [AsyncMongo](http://github.github.com/bitly/asyncmongo) is an asynchronous library for accessing mongo which is built on the tornado ioloop.
 
+asyncmongoorm is currently in version 0.2.0 and supports the following features:
+
+ * Map an collection
+ * Map fields of type (object_id, object, list, boolean, datetime, integer, string)
+ * Session facade to connection client
+ * Support to find, find_one, count, sum, geo_near and command
+ * Signals for pre_save, post_save, pre_remove, post_remove, pre_update, post_update
+
 Installation
 -----------------
 
 Installing: `pip install asyncmongoorm`
 
-Usage
+Common Usage
 --------------
 
     from asyncmongoorm.collection import Collection
@@ -67,6 +75,49 @@ Usage
             # remove object
             yield gen.Task(user_found.remove)
 
+Signals Usage
+-------------------
+
+    from asyncmongoorm.collection import Collection
+    from asyncmongoorm.session import Session
+    from asyncmongoorm.field import StringField, ObjectIdField, BooleanField, DateTimeField
+    from asyncmongoorm.signal import pre_save, receiver
+
+    import tornado.web
+    from tornado import gen
+
+    # create a new collection
+    class User(Collection):
+
+        # collection name
+        __collection__ = "user"
+    
+        # map fields
+        _id = ObjectIdField()
+        name = StringField()
+        active = BooleanField()
+        created = DateTimeField()
+    
+    @receiver(pre_save, User)
+    def set_object_id(sender, instance):
+        if not instance._id:
+            instance._id = ObjectId()
+    
+    # create asyncmongo session client
+    Session.create('localhost', 27017, 'asyncmongo_test') 
+
+    class Handler(tornado.web.RequestHandler):
+
+        @tornado.web.asynchronous
+        @gen.engine
+        def get(self):
+            user = User()
+            user.name = "User name"
+            user.active = True
+            user.created = datetime.now()
+
+            yield gen.Task(user.save)
+            
 For more examples, view [functional tests](https://github.com/marcelnicolay/asyncmongo-orm/tree/master/tests/functional)
 
 Requirements

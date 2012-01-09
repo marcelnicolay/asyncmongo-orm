@@ -12,7 +12,8 @@ class CollectionTestCase(unittest2.TestCase):
     def tearDown(self):
         global __lazy_classes__
         __lazy_classes__ = {}
-        
+
+    @fudge.test
     def test_can_be_set_field_name_collection(self):
 
         FakeField = fudge.Fake()

@@ -6,7 +6,8 @@ class SessionTestCase(unittest2.TestCase):
     
     def tearDown(self):
         session.Session._session = None
-        
+
+    @fudge.test
     def test_can_be_create_session(self):
         
         client_mock = fudge.Fake().expects("__init__").with_args(pool_id='mydb', 
@@ -25,7 +26,8 @@ class SessionTestCase(unittest2.TestCase):
         with self.assertRaises(ValueError):
                         
             session.Session()
-            
+
+    @fudge.test
     def test_can_be_destroy_session(self):
         client_mock = fudge.Fake().expects("__init__").with_args(pool_id='mydb', 
                                                   host="should_be_host", 
@@ -42,7 +44,8 @@ class SessionTestCase(unittest2.TestCase):
         
         with self.assertRaises(ValueError):                        
             session.Session()
-        
+
+    @fudge.test
     def test_can_get_session_passing_collection_name_as_argumnent(self):
         session.Session._session = fudge.Fake().has_attr(collection_name='should_be_collection')
         self.assertEquals('should_be_collection', session.Session('collection_name'))

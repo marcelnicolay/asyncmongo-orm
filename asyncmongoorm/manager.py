@@ -24,8 +24,10 @@ class Manager(object):
     def find(self, query, callback, **kw):
         result, error = yield gen.Task(Session(self.collection.__collection__).find, query, **kw)
         items = []
-        for item in result[0]:
-            items.append(self.collection.create(item))
+
+        if result:
+            for item in result[0]:
+                items.append(self.collection.create(item))
 
         callback(items)
 
@@ -40,7 +42,9 @@ class Manager(object):
 
         result, error = yield gen.Task(Session().command, command)
         
-        total = int(result[0]['n'])
+        total = 0
+        if result:
+            total = int(result[0]['n'])
         
         callback(total)
         
@@ -57,8 +61,10 @@ class Manager(object):
 
         result, error = yield gen.Task(Session().command, command)
         total = 0
-        if result[0]['retval']:
-            total = result[0]['retval'][0]['csum']
+        
+        if result:
+            if result[0]['retval']:
+                total = result[0]['retval'][0]['csum']
 
         callback(total)
         
@@ -88,9 +94,10 @@ class Manager(object):
         result, error = yield gen.Task(Session().command, command)
         items = []
 
-        if result[0]['ok']:
-            for item in result[0]['results']:
-                items.append(self.collection.create(item['obj']))
+        if result:
+            if result[0]['ok']:
+                for item in result[0]['results']:
+                    items.append(self.collection.create(item['obj']))
         
         callback(items)
 

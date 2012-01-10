@@ -19,5 +19,5 @@ functional: clean
 		nosetests -s --verbose --with-coverage --cover-package=asyncmongoorm tests/functional/*
 		
 ci_test: clean
-	PYTHONPATH=$PYTHONPATH:`pwd`/${PROJECT_PACKAGE} PATH="/home/quatix/virtualenv/asyncmongo/bin:$PATH" nosetests -s --verbose tests/unit/*
-	PYTHONPATH=$PYTHONPATH:`pwd`/${PROJECT_PACKAGE} PATH="/home/quatix/virtualenv/asyncmongo/bin:$PATH" nosetests -s --verbose tests/functional/*
+	PYTHONPATH=$PYTHONPATH:`pwd`/${PROJECT_PACKAGE} PATH="/home/quatix/virtualenv/asyncmongoorm/bin:$PATH" nosetests -s --verbose tests/unit/*
+	PYTHONPATH=$PYTHONPATH:`pwd`/${PROJECT_PACKAGE} PATH="/home/quatix/virtualenv/asyncmongoorm/bin:$PATH" nosetests -s --verbose tests/functional/*

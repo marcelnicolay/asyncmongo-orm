@@ -72,6 +72,12 @@ class ManagerTestCase(testing.AsyncTestCase):
         
         self.assertEquals(collection_test._id, collections_found[0]._id)
         
+    def test_find_not_found(self):
+        CollectionTest.objects.find({'string_attr':"string value diff"}, callback=self.stop)
+        collections_found = self.wait()
+
+        self.assertEquals([], collections_found)
+        
     def test_count(self):
 
         collection_test = CollectionTest()

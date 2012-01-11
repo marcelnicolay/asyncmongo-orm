@@ -25,7 +25,7 @@ class Manager(object):
         result, error = yield gen.Task(Session(self.collection.__collection__).find, query, **kw)
         items = []
 
-        if result:
+        if result and result[0]:
             for item in result[0]:
                 items.append(self.collection.create(item))
 

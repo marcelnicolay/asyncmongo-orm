@@ -93,13 +93,6 @@ class ManagerTestCase(testing.AsyncTestCase):
         
     def test_can_be_find(self):
 
-        class CollectionTest(Collection):
-
-            __collection__ = "collection_test"
-
-            _id = ObjectIdField()
-            string_attr = StringField()
-
         CollectionTest.objects.drop(callback=self.stop)
         self.wait()
 

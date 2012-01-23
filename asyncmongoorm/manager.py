@@ -47,7 +47,24 @@ class Manager(object):
             total = int(result[0]['n'])
         
         callback(total)
-        
+
+    @gen.engine
+    def distinct(self, key, callback, query=None):
+        """Returns a list of distinct values for the given key across collection"""
+        command = {
+            "distinct": self.collection.__collection__,
+            "key": key,
+        }
+        if query:
+            command['query'] = query
+
+        result, error = yield gen.Task(Session().command, command)
+        if error['error'] or not result or not result[0]['ok']:
+            callback(None)
+            return
+
+        callback(result[0]['values'])
+
     @gen.engine
     def sum(self, query, field, callback):
         command = {

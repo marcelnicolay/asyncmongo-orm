@@ -88,6 +88,31 @@ class ManagerTestCase(unittest2.TestCase):
 
     @fudge.test
     @gen.engine
+    def test_distinct(self):
+        fake_collection = fudge.Fake('Collection').has_attr(__collection__='some_collection')
+
+        def fake_command(command, callback):
+            expected_command = {
+                "distinct": "some_collection",
+                "key": 'my_key',
+                "query": {'attr': 'value'},
+            }
+            results = ({u'stats': {u'cursor': u'BasicCursor', u'timems': 0, u'nscannedObjects': 4, u'nscanned': 4, u'n': 4}, u'values': [u'Value A', u'Value B', u'Value C'], u'ok': 1.0},)
+            self.assertEqual(expected_command, command)
+            callback((results, {'error': None}))
+
+        fake_session = fudge.Fake()
+        fake_session.is_callable().returns_fake().has_attr(command=fake_command)
+
+        distinct_results = None
+        with fudge.patched_context(manager, 'Session', fake_session):
+            manager_obj = manager.Manager(fake_collection)
+            distinct_results = yield gen.Task(manager_obj.distinct, key='my_key', query={'attr': 'value'})
+
+        self.assertEqual(3, len(distinct_results))
+
+    @fudge.test
+    @gen.engine
     def test_sum(self):
 
         fake_collection = fudge.Fake().has_attr(__collection__='some_collection')

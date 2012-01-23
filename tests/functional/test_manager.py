@@ -21,6 +21,7 @@ class CollectionTest(Collection):
 class ManagerTestCase(testing.AsyncTestCase):
     
     def tearDown(self):
+        super(ManagerTestCase, self).tearDown()
         CollectionTest.objects.drop(callback=self.stop)
         self.wait()
         
@@ -114,3 +115,65 @@ class ManagerTestCase(testing.AsyncTestCase):
 
         collection_test.remove(callback=self.stop)
         self.wait()
+
+    def test_find_distinct_values_with_distinct_command(self):
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value A"
+        collection_test.save()
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value B"
+        collection_test.save()
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value A"
+        collection_test.save()
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value C"
+        collection_test.save()
+
+        CollectionTest.objects.distinct(key='string_attr', callback=self.stop)
+        distinct_values = self.wait()
+
+        self.assertEqual(3, len(distinct_values))
+        self.assertIn("Value A", distinct_values)
+        self.assertIn("Value B", distinct_values)
+        self.assertIn("Value C", distinct_values)
+
+    def test_find_distinct_values_with_distinct_command_excluding_some_values(self):
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value A"
+        collection_test.save()
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value B"
+        collection_test.save()
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value A"
+        collection_test.save()
+
+        collection_test = CollectionTest()
+        collection_test._id = ObjectId()
+        collection_test.string_attr = "Value C"
+        collection_test.save()
+
+        query = {
+            'string_attr': {
+                '$ne': 'Value A'
+            }
+        }
+        CollectionTest.objects.distinct(key='string_attr', query=query, callback=self.stop)
+        distinct_values = self.wait()
+
+        self.assertEqual(2, len(distinct_values))
+        self.assertIn("Value B", distinct_values)
+        self.assertIn("Value C", distinct_values)

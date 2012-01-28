@@ -9,7 +9,6 @@ from asyncmongoorm.field import StringField
 class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
     @fudge.test
-    @gen.engine
     def test_find_one(self):
 
         class CollectionTest(collection.Collection):
@@ -25,11 +24,11 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object  = manager.Manager(CollectionTest)
-            instance = yield gen.Task(manager_object.find_one, {'_id': 1})
+            manager_object.find_one({'_id': 1}, callback=self.stop)
+            instance = self.wait()
             self.assertEquals('some_value', instance.some_attr)
 
     @fudge.test
-    @gen.engine
     def test_find(self):
 
         class CollectionTest(collection.Collection):
@@ -46,12 +45,12 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object  = manager.Manager(CollectionTest)
-            instances = yield gen.Task(manager_object.find, {'_id': 1}, limit=1)
+            manager_object.find({'_id': 1}, limit=1, callback=self.stop)
+            instances = self.wait()
             self.assertEquals('some_value', instances[0].some_attr)
             self.assertEquals('another_value', instances[1].some_attr)
 
     @fudge.test
-    @gen.engine
     def test_count_without_query(self):
 
         fake_collection = fudge.Fake().has_attr(__collection__='some_collection')
@@ -65,11 +64,11 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object = manager.Manager(fake_collection)
-            result = yield gen.Task(manager_object.count)
+            manager_object.count(callback=self.stop)
+            result = self.wait()
             self.assertEquals(10, result)
 
     @fudge.test
-    @gen.engine
     def test_count_with_query(self):
 
         fake_collection = fudge.Fake().has_attr(__collection__='some_collection')
@@ -84,11 +83,11 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object = manager.Manager(fake_collection)
-            result = yield gen.Task(manager_object.count, query={'tag': 'some_tag'})
+            manager_object.count(query={'tag': 'some_tag'}, callback=self.stop)
+            result = self.wait()
             self.assertEquals(10, result)
 
     @fudge.test
-    @gen.engine
     def test_distinct(self):
         fake_collection = fudge.Fake('Collection').has_attr(__collection__='some_collection')
 
@@ -108,7 +107,8 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
         distinct_results = None
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_obj = manager.Manager(fake_collection)
-            distinct_results = yield gen.Task(manager_obj.distinct, key='my_key', query={'attr': 'value'})
+            manager_obj.distinct(key='my_key', query={'attr': 'value'}, callback=self.stop)
+            distinct_results = self.wait()
 
         self.assertEqual(3, len(distinct_results))
 
@@ -151,7 +151,6 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
         self.assertEquals({u'my_key_3': u'my_data_3'}, results[2])
 
     @fudge.test
-    @gen.engine
     def test_sum(self):
 
         fake_collection = fudge.Fake().has_attr(__collection__='some_collection')
@@ -168,11 +167,11 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object = manager.Manager(fake_collection)
-            result = yield gen.Task(manager_object.sum, {'tag': 'some_tag'}, 'some_field')
+            manager_object.sum({'tag': 'some_tag'}, 'some_field', callback=self.stop)
+            result = self.wait()
             self.assertEqual(20, result)
 
     @fudge.test
-    @gen.engine
     def test_geo_near(self):
 
         fake_collection = fudge.Fake().has_attr(__collection__='some_collection')\
@@ -196,13 +195,11 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_object = manager.Manager(fake_collection)
-            result = yield gen.Task(manager_object.geo_near,
-                                        'near_value',
-                                        max_distance=100,
-                                        unique_docs=True,
-                                        spherical=False,
-                                        num=10,
-                                        query={'tag': 'some_tag'})
+            manager_object.geo_near('near_value', max_distance=100,
+                                     unique_docs=True, spherical=False,
+                                     num=10, query={'tag': 'some_tag'},
+                                     callback=self.stop)
+            result = self.wait()
             self.assertEquals(['should_be_instance'], result)
 
     @fudge.test

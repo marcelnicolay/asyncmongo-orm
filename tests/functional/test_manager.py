@@ -170,3 +170,40 @@ class ManagerTestCase(testing.AsyncTestCase):
         self.assertEqual(2, len(distinct_values))
         self.assertIn("Value B", distinct_values)
         self.assertIn("Value C", distinct_values)
+
+    def test_execute_simple_mapreduce_return_results_inline(self):
+        collections = [
+            CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value A'}),
+            CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value B'}),
+            CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value A'}),
+            CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value C'}),
+            CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value D'}),
+        ]
+        for coll in collections:
+            coll.save(callback=self.stop)
+            self.wait()
+
+        map_ = """
+        function m() {
+            emit(this.string_attr, 1);
+        }
+        """
+
+        reduce_ = """
+        function r(key, values) {
+            var total = 0;
+            for (var i = 0; i < values.length; i++) {
+                total += values[i];
+            }
+            return total;
+        }
+        """
+
+        CollectionTest.objects.map_reduce(map_, reduce_, callback=self.stop)
+        results = self.wait()
+
+        self.assertEquals(4, len(results))
+        self.assertEquals({u'_id': u'Value A', u'value': 2.0}, results[0])
+        self.assertEquals({u'_id': u'Value B', u'value': 1.0}, results[1])
+        self.assertEquals({u'_id': u'Value C', u'value': 1.0}, results[2])
+        self.assertEquals({u'_id': u'Value D', u'value': 1.0}, results[3])

@@ -119,6 +119,21 @@ class Manager(object):
         callback(items)
 
     @gen.engine
+    def map_reduce(self, map_, reduce_, callback, out=None):
+        command = SON({'mapreduce': self.collection.__collection__})
+
+        command.update({
+            'map': map_,
+            'reduce': reduce_,
+        })
+
+        if out is None:
+            command.update({'out': {'inline': 1}})
+
+        result, error = yield gen.Task(Session().command, command)
+        callback(result[0]['results'])
+
+    @gen.engine
     def drop(self, callback):
         yield gen.Task(Session(self.collection.__collection__).remove)
         

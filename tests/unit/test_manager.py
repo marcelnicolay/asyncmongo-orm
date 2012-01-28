@@ -1,11 +1,12 @@
 import fudge
 import unittest2
 from tornado import gen
+from tornado import testing
 from asyncmongoorm import collection
 from asyncmongoorm import manager
 from asyncmongoorm.field import StringField
 
-class ManagerTestCase(unittest2.TestCase):
+class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
 
     @fudge.test
     @gen.engine
@@ -110,6 +111,44 @@ class ManagerTestCase(unittest2.TestCase):
             distinct_results = yield gen.Task(manager_obj.distinct, key='my_key', query={'attr': 'value'})
 
         self.assertEqual(3, len(distinct_results))
+
+    @fudge.test
+    def test_simple_map_reduce(self):
+        fake_collection = fudge.Fake('Collection').has_attr(__collection__='some_collection')
+
+        def fake_command(command, callback):
+            expected_command = {
+                "mapreduce": "some_collection",
+                "map": 'map_fn',
+                "reduce": 'reduce_fn',
+                "out": {'inline': 1},
+            }
+            results = ({
+                u'results': [
+                    {u'my_key_1': u'my_data_1'},
+                    {u'my_key_2': u'my_data_2'},
+                    {u'my_key_3': u'my_data_3'},
+                ],
+                u'timeMillis': 123,
+                u'counts': {u'input': 5, u'output': 3, u'emit': 5, u'reduce': 2},
+                u'ok': 1,
+            },)
+            self.assertEquals(expected_command, command)
+            callback((results, {'error': None}))
+
+        fake_session = fudge.Fake('Session')
+        fake_session.is_callable().returns_fake().has_attr(command=fake_command)
+
+        results = None
+        with fudge.patched_context(manager, 'Session', fake_session):
+            manager_obj = manager.Manager(fake_collection)
+            manager_obj.map_reduce("map_fn", "reduce_fn", out=None, callback=self.stop)
+            results = self.wait()
+
+        self.assertEquals(3, len(results))
+        self.assertEquals({u'my_key_1': u'my_data_1'}, results[0])
+        self.assertEquals({u'my_key_2': u'my_data_2'}, results[1])
+        self.assertEquals({u'my_key_3': u'my_data_3'}, results[2])
 
     @fudge.test
     @gen.engine

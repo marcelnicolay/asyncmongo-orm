@@ -45,7 +45,7 @@ class ManagerTestCase(testing.AsyncTestCase):
         CollectionTest.objects.find_one({'string_attr':"string value"}, callback=self.stop)
         collections_found = self.wait()
 
-        self.assertEquals(collection_test._id, collections_found._id)
+        self.assertIn(collections_found._id, (collection_test._id, other_collection_test._id))
     
     def test_find_one_not_found(self):
 
@@ -64,15 +64,16 @@ class ManagerTestCase(testing.AsyncTestCase):
         
         other_collection_test = CollectionTest()
         other_collection_test._id = ObjectId()
-        other_collection_test.string_attr = "string value"
+        other_collection_test.string_attr = "other string value"
         other_collection_test.save(callback=self.stop)
         self.wait()
         
         CollectionTest.objects.find({'string_attr':"string value"}, callback=self.stop)
         collections_found = self.wait()
         
+        self.assertEquals(1, len(collections_found))
         self.assertEquals(collection_test._id, collections_found[0]._id)
-        
+
     def test_find_not_found(self):
         CollectionTest.objects.find({'string_attr':"string value diff"}, callback=self.stop)
         collections_found = self.wait()
@@ -84,7 +85,8 @@ class ManagerTestCase(testing.AsyncTestCase):
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "string value"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         CollectionTest.objects.count(callback=self.stop)
         count = self.wait()
@@ -99,7 +101,8 @@ class ManagerTestCase(testing.AsyncTestCase):
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "string value"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         CollectionTest.objects.find({'string_attr':"string value"}, callback=self.stop)
         collections_found = self.wait()
@@ -113,22 +116,26 @@ class ManagerTestCase(testing.AsyncTestCase):
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value A"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value B"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value A"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value C"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         CollectionTest.objects.distinct(key='string_attr', callback=self.stop)
         distinct_values = self.wait()
@@ -142,22 +149,26 @@ class ManagerTestCase(testing.AsyncTestCase):
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value A"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value B"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value A"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         collection_test = CollectionTest()
         collection_test._id = ObjectId()
         collection_test.string_attr = "Value C"
-        collection_test.save()
+        collection_test.save(callback=self.stop)
+        self.wait()
 
         query = {
             'string_attr': {

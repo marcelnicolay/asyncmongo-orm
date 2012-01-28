@@ -119,7 +119,7 @@ class Manager(object):
         callback(items)
 
     @gen.engine
-    def map_reduce(self, map_, reduce_, callback, out=None):
+    def map_reduce(self, map_, reduce_, callback, query=None, out=None):
         command = SON({'mapreduce': self.collection.__collection__})
 
         command.update({
@@ -127,6 +127,8 @@ class Manager(object):
             'reduce': reduce_,
         })
 
+        if query is not None:
+            command.update({'query': query})
         if out is None:
             command.update({'out': {'inline': 1}})
 

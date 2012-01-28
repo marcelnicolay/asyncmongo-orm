@@ -189,10 +189,15 @@ class ManagerTestCase(testing.AsyncTestCase):
             CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value A'}),
             CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value C'}),
             CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value D'}),
+            CollectionTest.create({'_id': ObjectId(), 'string_attr': 'Value E'}),
         ]
         for coll in collections:
             coll.save(callback=self.stop)
             self.wait()
+
+        query = {
+            'string_attr': {'$ne': 'Value E'},
+        }
 
         map_ = """
         function m() {
@@ -210,7 +215,7 @@ class ManagerTestCase(testing.AsyncTestCase):
         }
         """
 
-        CollectionTest.objects.map_reduce(map_, reduce_, callback=self.stop)
+        CollectionTest.objects.map_reduce(map_, reduce_, query=query, callback=self.stop)
         results = self.wait()
 
         self.assertEquals(4, len(results))

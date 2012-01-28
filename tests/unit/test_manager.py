@@ -121,6 +121,7 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
                 "mapreduce": "some_collection",
                 "map": 'map_fn',
                 "reduce": 'reduce_fn',
+                "query": {"my_field": "my_value"},
                 "out": {'inline': 1},
             }
             results = ({
@@ -142,7 +143,7 @@ class ManagerTestCase(testing.AsyncTestCase, unittest2.TestCase):
         results = None
         with fudge.patched_context(manager, 'Session', fake_session):
             manager_obj = manager.Manager(fake_collection)
-            manager_obj.map_reduce("map_fn", "reduce_fn", out=None, callback=self.stop)
+            manager_obj.map_reduce("map_fn", "reduce_fn", query={"my_field": "my_value"}, callback=self.stop)
             results = self.wait()
 
         self.assertEquals(3, len(results))

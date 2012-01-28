@@ -133,6 +133,10 @@ class Manager(object):
             command.update({'out': {'inline': 1}})
 
         result, error = yield gen.Task(Session().command, command)
+        if not result or int(result[0]['ok']) != 1:
+            callback(None)
+            return
+
         callback(result[0]['results'])
 
     @gen.engine

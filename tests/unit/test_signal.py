@@ -59,7 +59,7 @@ class SignalTestCase(unittest2.TestCase):
         def receiver2(sender, instance):
             executed_receivers.append(2)
 
-        some_signal.send(sender=SomeCollection, instance=SomeCollection())
+        some_signal.send(instance=SomeCollection())
 
         self.assertIn(1, executed_receivers)
         self.assertIn(2, executed_receivers)
@@ -82,7 +82,7 @@ class SignalTestCase(unittest2.TestCase):
         def second_receiver(sender, instance):
             executed_receivers.append(2)
 
-        some_signal.send(sender=FirstCollection, instance=FirstCollection())
+        some_signal.send(instance=FirstCollection())
 
         self.assertIn(1, executed_receivers)
         self.assertNotIn(2, executed_receivers)

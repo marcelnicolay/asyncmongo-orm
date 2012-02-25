@@ -11,9 +11,9 @@ class Signal(object):
     def disconnect(self, sender, handler):
         self.receivers.remove((sender, handler))
 
-    def send(self, sender, instance):
-        for s, handler in self.receivers:
-            if s == sender:
+    def send(self, instance):
+        for sender, handler in self.receivers:
+            if isinstance(instance, sender):
                 handler(sender, instance)
 
 def receiver(signal, sender):

@@ -47,7 +47,24 @@ class Manager(object):
             total = int(result[0]['n'])
         
         callback(total)
-        
+
+    @gen.engine
+    def distinct(self, key, callback, query=None):
+        """Returns a list of distinct values for the given key across collection"""
+        command = {
+            "distinct": self.collection.__collection__,
+            "key": key,
+        }
+        if query:
+            command['query'] = query
+
+        result, error = yield gen.Task(Session().command, command)
+        if error['error'] or not result or not result[0]['ok']:
+            callback(None)
+            return
+
+        callback(result[0]['values'])
+
     @gen.engine
     def sum(self, query, field, callback):
         command = {
@@ -100,6 +117,27 @@ class Manager(object):
                     items.append(self.collection.create(item['obj']))
         
         callback(items)
+
+    @gen.engine
+    def map_reduce(self, map_, reduce_, callback, query=None, out=None):
+        command = SON({'mapreduce': self.collection.__collection__})
+
+        command.update({
+            'map': map_,
+            'reduce': reduce_,
+        })
+
+        if query is not None:
+            command.update({'query': query})
+        if out is None:
+            command.update({'out': {'inline': 1}})
+
+        result, error = yield gen.Task(Session().command, command)
+        if not result or int(result[0]['ok']) != 1:
+            callback(None)
+            return
+
+        callback(result[0]['results'])
 
     @gen.engine
     def drop(self, callback):

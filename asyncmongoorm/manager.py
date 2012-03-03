@@ -43,7 +43,7 @@ class Manager(object):
         result, error = yield gen.Task(Session().command, command)
         
         total = 0
-        if result:
+        if result and len(result) > 0 and result[0].has_key('n'):
             total = int(result[0]['n'])
         
         callback(total)

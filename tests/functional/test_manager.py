@@ -92,6 +92,14 @@ class ManagerTestCase(testing.AsyncTestCase):
         count = self.wait()
 
         self.assertEquals(1, count)
+        collection_test.remove()
+
+    def test_count_not_found(self):
+
+        CollectionTest.objects.count(callback=self.stop)
+        count = self.wait()
+
+        self.assertEquals(0, count)
         
     def test_can_be_find(self):
 

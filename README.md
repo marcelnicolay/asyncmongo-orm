@@ -11,14 +11,14 @@ Documentation
 [Online documentation](http://openlabs.github.com/asyncmongo-orm/) is also available, thanks [Sharoon Thomas](https://github.com/sharoonthomas). The online documentation includes full API documentation as well as Getting Started Guides.
 
 Contributing
-________________
+------------------
 
-    1. fork and clone the project
-    2. install the dependencies above
-    3. run the tests with make: > make unit functional
-    4. hack at will
-    5. commit, push etc
-    6. send a pull request
+1. fork and clone the project
+2. install the dependencies above
+3. run the tests with make: > make unit functional
+4. hack at will
+5. commit, push etc
+6. send a pull request
 
 Requirements
 ------------

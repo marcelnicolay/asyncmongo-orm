@@ -27,6 +27,8 @@ class Field(object):
                 value = self.field_type(value)
             except TypeError:
                 raise(TypeError("type of %s must be %s" % (self.name, self.field_type)))
+            except ValueError:
+                raise(TypeError("type of %s must be %s" % (self.name, self.field_type)))
 
         instance._data[self.name] = value
 
